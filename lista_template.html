@@ -1,0 +1,155 @@
+{% extends "mobile/base-para-lista.html" %}
+
+
+{% block content %}
+
+<div class="container-md">
+  <div class="row">
+    <div class="col-md-6">
+      <p>LISTA DE PRECIOS {{ mes }}</p>
+    </div>
+    <div class="col-md-6">
+      <a href="https://www.mesasmastrangelo.com.ar" class="btn btn-outline-info mx-3 my-3">https://www.mesasmastrangelo.com.ar</a>
+    </div>
+  </div>
+</div>
+<p>J.D.Peron 1283. Fabrica Gral. López 610. VGG   Te: (0341)4921690 Cel: (0341)156627943</p>
+<p>ENCHAPADO EN ROBLE O CAOBA 10% MAS SOBRE LISTA</p>
+<div class="alert alert-danger">
+  <strong>Importante!</strong> Dados los continuos cambios de precios de los materiales se reservará este precio únicamente abonando el 50% al momento del pedido</div>
+
+<div class="container-md">
+  <div class="row">
+    <div class="col-md-6">
+    <table class="table table-striped table-hover table-bordered">
+      <thead class="table-success">
+	<tr>
+	  <th class="table-dark">Nro 100 - Cubo</th>
+	  <th>Trampa</th>
+	  <th>Fija</th>
+	</tr>
+      </thead>
+      <tbody>
+	{% for medida in nro100 %}
+	<tr>
+	  {% for item in medida %}
+	  <td>
+	    {{ item }}
+	  </td>
+	  {% endfor %}
+	</tr>
+	{% endfor %}
+      </tbody>
+    </table>
+
+    <table class="table table-striped table-hover table-bordered">
+      <thead class="table-success">
+	<tr>
+	  <th class="table-dark">Recta</th>
+	  <th>Trampa</th>
+	  <th>Fija</th>
+	</tr>
+      </thead>
+      <tbody>
+	{% for medida in recta %}
+	<tr>
+	  {% for item in medida %}
+	  <td>
+	    {% if item == None %}
+	      &nbsp;
+	    {% else %}
+	      {{ item }}
+	    {% endif %} 
+	  </td>
+	  {% endfor %}
+	</tr>
+	{% endfor %}
+      </tbody>
+    </table>
+    </div>
+
+      <div class="col-md-6">
+      <table class="table table-striped table-hover table-bordered">
+      <thead class="table-success">
+	<tr>
+	  <th class="table-dark">Redonda</th>
+	  <th>Trampa</th>
+	  <th>Fija</th>
+	</tr>
+      </thead>
+      <tbody>
+	{% for medida in redonda %}
+	<tr>
+	  {% for item in medida %}
+	  <td>
+	    {% if item == None %}
+	      &nbsp;
+	    {% else %}
+	      {{ item }}
+	    {% endif %} 
+	  </td>
+	  {% endfor %}
+	</tr>
+	{% endfor %}
+      </tbody>
+    </table>
+
+
+    <table class="table table-striped table-hover table-bordered">
+      <thead class="table-success">
+	<tr>
+	  <th class="table-dark">Escandinava</th>
+	  <th>Trampa</th>
+	  <th>Fija</th>
+	</tr>
+      </thead>
+      <tbody>
+	{% for medida in escandinava %}
+	<tr>
+	  {% for item in medida %}
+	  <td>
+	    {% if item == None %}
+	      &nbsp;
+	    {% else %}
+	      {{ item }}
+	    {% endif %} 
+	  </td>
+	  {% endfor %}
+	</tr>
+	{% endfor %}
+      </tbody>
+    </table>
+
+    <table class="table table-striped table-hover table-bordered">
+      <thead class="table-success">
+	<tr>
+	  <th class="table-dark">Ratona</th>
+	  <th>Trampa</th>
+	  <th>Fija</th>
+	</tr>
+      </thead>
+      <tbody>
+	{% for medida in ratona %}
+	<tr>
+	  {% for item in medida %}
+	  <td>
+	    {% if item == None %}
+	      &nbsp;
+	    {% else %}
+	      {{ item }}
+	    {% endif %} 
+	  </td>
+	  {% endfor %}
+	</tr>
+	{% endfor %}
+      </tbody>
+    </table>
+    </div>
+
+  </div>
+  
+</div>
+
+
+
+{% endblock %}

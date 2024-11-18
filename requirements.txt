@@ -1,0 +1,11 @@
+jinja2==3.0.1
+markupsafe==2.0.1
+numpy==1.22.1
+pyqt5-qt5==5.15.2
+pyqt5-sip==12.9.0
+pyqt5==5.15.4
+pyqtchart-qt5==5.15.2
+pyqtchart==5.15.4
+pyqtgraph==0.12.1
+python-dateutil==2.8.1
+six==1.16.0

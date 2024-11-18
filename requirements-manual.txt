@@ -1,0 +1,12 @@
+jinja2
+numpy
+pyqt5
+ pyqtchart-qt5
+ python-dateutil
+ pyqtchart
+
+ designer:
+ sudo apt-get install qttools5-dev-tools
+ sudo apt-get install qttools5-dev
+
+sudo apt install sqlitebrowser
