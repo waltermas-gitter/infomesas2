@@ -1,6 +1,6 @@
 #!/bin/bash
 TIMEFORMAT='%3U'
-cd /home/walter/infomesas-gui/mobile
+cd /home/walter/infomesas2/mobile
 python m_generar_clientes_jinja.py
 python m_generar_pendientes_jinja.py
 python m_generar_cada_cliente_jinja.py
