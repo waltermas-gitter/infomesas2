@@ -32,7 +32,8 @@ def main():
             chapa = devuelvoNombreChapa(pedido[4])
             if pedido[11]:
                 fechaEntregada = datetime.strptime(pedido[11], "%Y-%m-%d %H:%M:%S")
-                fechapentregada = fechaPedido.strftime("%d-%m-%Y")
+                # fechapentregada = fechaPedido.strftime("%d-%m-%Y") 🐛
+                fechapentregada = fechaEntregada.strftime("%d-%m-%Y")
                 lugarEntrega = devuelvoNombreLugarEntrega(pedido[12])
             else:
                 fechapentregada = ""
