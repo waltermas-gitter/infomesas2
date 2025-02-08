@@ -386,6 +386,8 @@ class InfomesasWindow(QMainWindow):
         self.tabla = TableWindow("lugaresEntrega")
         self.tabla.show()
 
+
+
 class PedidoDialog(QDialog):
     def __init__(self, id):
         super().__init__()
@@ -457,6 +459,9 @@ class PedidoDialog(QDialog):
         self.ultimaLista=open('ultimalista.txt').readlines()
         self.pasarAccPushButton.clicked.connect(self.pasarAcc)
         self.medidaCerradaSpinBox.valueChanged.connect(self.autoFilterUltimaLista)
+
+        self.llenarRapidFill()
+        self.rapidFillComboBox.currentTextChanged.connect(self.rapidFillChanged)
 
     def cambioEstado(self):
         if self.estadoListWidget.currentItem().text() == 'entregada':
@@ -580,6 +585,29 @@ class PedidoDialog(QDialog):
 
     def autoFilterUltimaLista(self):
         self.filterListaLineEdit.setText(self.medidaCerradaSpinBox.cleanText())
+
+    def llenarRapidFill(self):
+        pedidosComunes = []
+        pedidosComunes.append("")
+        pedidosComunes.append("120 a 160 x 80")
+        pedidosComunes.append("140 a 180 x 85")
+        pedidosComunes.append("160 a 200 x 85")
+        pedidosComunes.append("180 a 220 x 90")
+        pedidosComunes.append("180 a 220 x 90")
+        pedidosComunes.append("200 a 240 x 90")
+        pedidosComunes.append("120 a 120 x 80")
+        pedidosComunes.append("140 a 140 x 85")
+        pedidosComunes.append("160 a 160 x 85")
+        pedidosComunes.append("180 a 180 x 90")
+        pedidosComunes.append("200 a 200 x 90")
+
+        self.rapidFillComboBox.addItems(pedidosComunes)
+
+    def rapidFillChanged(self):
+        medidas = self.rapidFillComboBox.currentText().split()
+        self.medidaCerradaSpinBox.setValue(int(medidas[0]))
+        self.medidaAbiertaSpinBox.setValue(int(medidas[2]))
+        self.anchoSpinBox.setValue(int(medidas[4]))
 
 
 class SumasSaldosDialog(QDialog):
