@@ -247,7 +247,7 @@ class InfomesasWindow(QMainWindow):
 
 
     def pushear(self):
-        os.system("konsole -e 'bash ./actualizar.sh &'" )
+        os.system("kitty -e 'bash ./actualizar.sh &'" )
 
     def imprimirPendientes(self):
         texto = ''
