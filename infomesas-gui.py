@@ -865,6 +865,8 @@ class ProductosSeguidosWindow(QMainWindow):
         self.productosSeguidosTableWidget.setSelectionBehavior(QTableView.SelectRows)
         self.productosSeguidosTableWidget.setHorizontalHeaderLabels(["ID", "Descripcion", "Fecha", "Proveedor", "Precio"])
         self.productosSeguidosTableWidget.itemDoubleClicked.connect(self.historialPreciosShow)
+        self.productosSeguidosTableWidget.setContextMenuPolicy(Qt.CustomContextMenu)
+        self.productosSeguidosTableWidget.customContextMenuRequested.connect(self.productoFavorito)
         # self.filtroLineEdit.textChanged.connect(self.cargarTabla)
         self.filtroLineEdit.textChanged.connect(self.cargarTabla)
         self.cargarTabla()
@@ -877,13 +879,18 @@ class ProductosSeguidosWindow(QMainWindow):
     def cargarTabla(self):
         self.productosSeguidosTableWidget.setRowCount(0)
         filtro = "%" + self.filtroLineEdit.text() + "%"
-        # print(filtro)
-        query = QSqlQuery("SELECT * FROM productosSeguidos WHERE descripcion LIKE '%s' ORDER BY descripcion ASC" % filtro)
+        # query = QSqlQuery("SELECT * FROM productosSeguidos WHERE descripcion LIKE '%s' ORDER BY descripcion ASC" % filtro)
+        query = QSqlQuery("SELECT * FROM productosSeguidos WHERE descripcion LIKE '%s' ORDER BY favorito DESC" % filtro)
         while query.next():        
             rows = self.productosSeguidosTableWidget.rowCount()
             self.productosSeguidosTableWidget.setRowCount(rows + 1)
             self.productosSeguidosTableWidget.setItem(rows, 0, QTableWidgetItem(str(query.value(0))))
-            self.productosSeguidosTableWidget.setItem(rows, 1, QTableWidgetItem(query.value(1)))
+            # self.productosSeguidosTableWidget.setItem(rows, 1, QTableWidgetItem(query.value(1)))
+            item = QTableWidgetItem(query.value(1))
+            if query.value(2) == 1:
+                item.setBackground(QBrush(QColor("lightgreen")))
+            self.productosSeguidosTableWidget.setItem(rows, 1, item)
+
             queryPrecio = QSqlQuery("SELECT * FROM productosSeguidosPrecios WHERE idProducto = '%s'" % query.value(0))
             queryPrecio.last()
             if queryPrecio.value(1):
@@ -903,6 +910,17 @@ class ProductosSeguidosWindow(QMainWindow):
         if okPressed and descripcion != '':
             query = QSqlQuery("INSERT INTO productosSeguidos (descripcion) VALUES ('%s')" % descripcion) 
             self.cargarTabla()
+
+    def productoFavorito(self):
+        producto = self.productosSeguidosTableWidget.selectedItems()[0].text()
+        query = QSqlQuery("SELECT favorito FROM productosSeguidos WHERE idProducto = '%s'" % producto) 
+        query.first()
+        if query.value(0) == 0:
+            query = QSqlQuery("UPDATE productosSeguidos SET favorito = 1 WHERE idProducto = '%s'" % producto) 
+        else:
+            query = QSqlQuery("UPDATE productosSeguidos SET favorito = 0 WHERE idProducto = '%s'" % producto) 
+
+        self.cargarTabla()
 
 
 class HistorialPreciosDialog(QDialog):
