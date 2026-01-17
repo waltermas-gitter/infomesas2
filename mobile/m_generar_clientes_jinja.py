@@ -19,7 +19,7 @@ def main():
         nombreSinEspacios = item[1].replace(' ', '-')
         clientes.append((item[1], "/mobile/%s.html" % nombreSinEspacios, "/mobile/%s-deudas.html" % nombreSinEspacios))
         if item[5] > 0:
-            deudores.append((nombreSinEspacios, item[5]))
+            deudores.append((nombreSinEspacios, item[5], "/mobile/%s-deudas.html" % nombreSinEspacios))
 
 
     tmpl = env.get_template('clientes_template.html')
