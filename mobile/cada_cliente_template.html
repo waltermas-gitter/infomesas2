@@ -8,6 +8,8 @@
 <div class="col-md-3 mx-3 my-3">
 {% if pedido[8] == 'en produccion' %}
   <div class="card text-white" style="background-color:brown;">
+{% elif pedido[8] == 'presupuesto' %}
+  <div class="card text-white" style="background-color:blue;">
 {% elif pedido[8] == 'pendiente' %}
   <div class="card bg-success text-white">
 {% elif pedido[8] == 'terminada' %}

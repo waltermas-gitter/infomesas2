@@ -9,6 +9,7 @@ python m_generar_cada_cliente_deuda_jinja.py
 python m_generar_cheques_jinja.py
 python m_generar_precios_jinja.py
 python m_generar_notas_jinja.py
+python m_generar_presupuestos_jinja.py
 
 git status
 git add -A

@@ -67,6 +67,7 @@ class InfomesasWindow(QMainWindow):
         self.terminadasCheckBox.stateChanged.connect(self.vistaChanged)
         self.entregadasCheckBox.stateChanged.connect(self.vistaChanged)
         self.anuladasCheckBox.stateChanged.connect(self.vistaChanged)
+        self.presupuestosCheckBox.stateChanged.connect(self.vistaChanged)
         self.pedidosTableWidget.setColumnCount(14)
         self.pedidosTableWidget.setSelectionBehavior(QTableView.SelectRows)
         self.pedidosTableWidget.setHorizontalHeaderLabels(["ID", "Fecha", "Cliente", "Modelo", "Chapa", "Notas", "cerrada", "abierta", "ancho", "Precio", "Estado", "F.entrega", "L.entrega", "Demora"])
@@ -92,6 +93,7 @@ class InfomesasWindow(QMainWindow):
         self.soloTerminadasPushButton.clicked.connect(partial(self.solo, self.terminadasCheckBox))
         self.soloEntregadasPushButton.clicked.connect(partial(self.solo, self.entregadasCheckBox))
         self.soloAnuladasPushButton.clicked.connect(partial(self.solo, self.anuladasCheckBox))
+        self.soloPresupuestosPushButton.clicked.connect(partial(self.solo, self.presupuestosCheckBox))
         self.pedidosTableWidget.horizontalHeader().sectionClicked.connect(self.onHeaderClicked)
         # self.pedidosTableWidget.setSortingEnabled(True)
 
@@ -178,6 +180,8 @@ class InfomesasWindow(QMainWindow):
             brush = QBrush(QColor('brown'))
         elif estado == 'terminada':
             brush = QBrush(QColor(200,160,50))
+        elif estado == 'presupuesto':
+            brush = QBrush(QColor('blue'))
         return brush
 
     def nuevoPedido(self):
@@ -221,6 +225,8 @@ class InfomesasWindow(QMainWindow):
             queryString = queryString + " OR estado='entregada'"
         if self.anuladasCheckBox.isChecked():
             queryString = queryString + " OR estado='anulada'"
+        if self.presupuestosCheckBox.isChecked():
+            queryString = queryString + " OR estado='presupuesto'"
         # queryString = "SELECT * FROM pedidos WHERE" + queryString
         # queryString = queryString[:28] + queryString[31:]
         queryString = queryString[3:]
@@ -243,6 +249,7 @@ class InfomesasWindow(QMainWindow):
         self.terminadasCheckBox.setChecked(False)
         self.entregadasCheckBox.setChecked(False)
         self.anuladasCheckBox.setChecked(False)
+        self.presupuestosCheckBox.setChecked(False)
         soloItem.setChecked(True)
 
 
@@ -405,7 +412,7 @@ class PedidoDialog(QDialog):
         query = QSqlQuery("SELECT chapa FROM chapas")
         while query.next():
             self.chapaListWidget.addItem(query.value(0))
-        estados = ['pendiente', 'en produccion', 'terminada', 'entregada', 'anulada']
+        estados = ['pendiente', 'en produccion', 'terminada', 'entregada', 'anulada', 'presupuesto']
         self.estadoListWidget.addItems(estados)
         query = QSqlQuery("SELECT nombre FROM lugaresEntrega ORDER BY nombre")
         while query.next():

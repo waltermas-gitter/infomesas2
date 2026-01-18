@@ -1,0 +1,21 @@
+<!-- <!DOCTYPE html> -->
+
+{% extends "base.html" %}
+{% block content %}
+  {% for pedido in pedidos %}
+
+<div class="col-md-3 mx-3 my-3">
+  <div class="card text-white" style="background-color:blue;">
+
+    <div class="card-body">
+      <h4 class="card-title text-black">{{pedido[0]}}</h4>
+  <p class="card-text text-center">  <a href="{{pedido[1][1]}}" class="btn" style="background-color: white";">{{pedido[1][0]}}</a></p>
+      <p class="card-text">{{ pedido[2] }} {{ pedido[3] }}</p>
+      <p class="card-text">{{ pedido[4] }}</p>
+      <p class="card-text">{{ pedido[5] }}</p>
+      <h3 class="card-text"><span class="badge bg-dark">{{ pedido[6] }}</span></h3>
+    </div>
+  </div>
+</div>
+  {% endfor %} 
+{% endblock %}
