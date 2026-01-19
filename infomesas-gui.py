@@ -85,6 +85,7 @@ class InfomesasWindow(QMainWindow):
         # self.cajaPushButton.clicked.connect(self.showCaja)
         self.productosSeguidosPushButton.clicked.connect(self.showProductosSeguidos)
         self.chequesPushButton.clicked.connect(self.showCheques)
+        self.sueldoPushButton.clicked.connect(self.showSueldo)
         self.salirPushButton.clicked.connect(self.close)
         self.pushPushButton.clicked.connect(self.pushear)
         self.notasPushButton.clicked.connect(self.showNotas)
@@ -204,6 +205,10 @@ class InfomesasWindow(QMainWindow):
     def showCheques(self):
         self.cheques = ChequesWindow()
         self.cheques.show()
+
+    def showSueldo(self):
+        self.sueldo = SueldoWindow()
+        self.sueldo.show()
 
     def showNotas(self):
         self.notas = NotasWindow()
@@ -1171,6 +1176,214 @@ class ChequeDialog(QDialog):
         self.accept()
 
  
+class SueldoWindow(QMainWindow):
+    def __init__(self):
+        super().__init__()
+        uic.loadUi("sueldo.ui", self)
+        self.initUI()
+
+    def initUI(self):
+        self.sueldoTableWidget.setColumnCount(6)
+        self.sueldoTableWidget.setSelectionBehavior(QTableView.SelectRows)
+        self.sueldoTableWidget.setHorizontalHeaderLabels(["ID", "Fecha", "Detalle", "Ingreso", "Egreso", "Saldo"])
+        self.sueldoTableWidget.setColumnWidth(0, 7)
+        self.sueldoTableWidget.setColumnWidth(1, 70)
+        self.sueldoTableWidget.setColumnWidth(2, 200)
+        self.sueldoTableWidget.setColumnWidth(3, 60)
+        self.sueldoTableWidget.setColumnWidth(4, 60)
+        self.sueldoTableWidget.setColumnWidth(5, 60)
+        self.sueldoTableWidget.itemDoubleClicked.connect(self.editarSueldo)
+        self.nuevoPushButton.clicked.connect(self.nuevoSueldo)
+        self.salirPushButton.clicked.connect(self.close)
+        self.cargarTabla()
+
+    # def cargarTabla(self):
+    #     saldo = 0
+    #     self.sueldoTableWidget.setRowCount(0)
+    #     query = QSqlQuery("SELECT * FROM sueldo ORDER BY fecha")
+    #     while query.next():        
+    #         rows = self.sueldoTableWidget.rowCount()
+    #         self.sueldoTableWidget.setRowCount(rows + 1)
+    #         self.sueldoTableWidget.setItem(rows, 0, QTableWidgetItem(str(query.value(0))))
+    #         fecha = datetime.strptime(query.value(1), "%Y-%m-%d %H:%M:%S")
+    #         fechap = fecha.strftime("%d-%m-%Y")
+    #         self.sueldoTableWidget.setItem(rows, 1, QTableWidgetItem(fechap))
+    #         self.sueldoTableWidget.setItem(rows, 2, QTableWidgetItem(query.value(2)))
+    #         item = QTableWidgetItem()
+    #         item.setTextAlignment(Qt.AlignRight)
+    #         saldo += query.value(3)
+    #         if (query.value(3) > 0):
+    #             item.setText(str(query.value(3)))
+    #             self.sueldoTableWidget.setItem(rows, 3, item)
+    #         else:
+    #             item.setText(str(query.value(3)*(-1)))
+    #             self.sueldoTableWidget.setItem(rows, 4, item)
+    #         itemSueldo = QTableWidgetItem(str(saldo))
+    #         itemSueldo.setTextAlignment(Qt.AlignRight)
+    #         self.sueldoTableWidget.setItem(rows, 5, itemSueldo)
+    def cargarTabla(self):
+        
+        saldo = 0
+        mes_actual = None
+        total_mes_ingreso = 0
+        total_mes_egreso = 0
+        
+        self.sueldoTableWidget.setRowCount(0)
+        query = QSqlQuery("SELECT * FROM sueldo ORDER BY fecha")
+        
+        while query.next():
+            fecha = datetime.strptime(query.value(1), "%Y-%m-%d %H:%M:%S")
+            mes = fecha.strftime("%m-%Y")  # Formato mes-año
+            
+            # Si cambia el mes, insertar fila de total
+            if mes_actual is not None and mes != mes_actual:
+                self._insertarFilaTotal(total_mes_ingreso, total_mes_egreso, mes_actual)
+                # Reiniciar para el nuevo mes
+                saldo = 0
+                total_mes_ingreso = 0
+                total_mes_egreso = 0
+            
+            mes_actual = mes
+            
+            # Agregar fila normal
+            rows = self.sueldoTableWidget.rowCount()
+            self.sueldoTableWidget.setRowCount(rows + 1)
+            
+            self.sueldoTableWidget.setItem(rows, 0, QTableWidgetItem(str(query.value(0))))
+            
+            fechap = fecha.strftime("%d-%m-%Y")
+            self.sueldoTableWidget.setItem(rows, 1, QTableWidgetItem(fechap))
+            self.sueldoTableWidget.setItem(rows, 2, QTableWidgetItem(query.value(2)))
+            
+            # Manejar ingreso/egreso
+            valor = query.value(3)
+            saldo += valor
+            
+            item = QTableWidgetItem()
+            item.setTextAlignment(Qt.AlignRight | Qt.AlignVCenter)
+            
+            if valor > 0:
+                item.setText(str(valor))
+                self.sueldoTableWidget.setItem(rows, 3, item)
+                total_mes_ingreso += valor
+            else:
+                item.setText(str(valor * -1))
+                self.sueldoTableWidget.setItem(rows, 4, item)
+                total_mes_egreso += abs(valor)
+            
+            # Saldo
+            itemSueldo = QTableWidgetItem(str(saldo))
+            itemSueldo.setTextAlignment(Qt.AlignRight | Qt.AlignVCenter)
+            self.sueldoTableWidget.setItem(rows, 5, itemSueldo)
+        
+        # Insertar total del último mes
+        if mes_actual is not None:
+            self._insertarFilaTotal(total_mes_ingreso, total_mes_egreso, mes_actual)
+
+    def _insertarFilaTotal(self, ingreso, egreso, mes):
+        """Inserta una fila de total del mes con formato especial"""
+        
+        rows = self.sueldoTableWidget.rowCount()
+        self.sueldoTableWidget.setRowCount(rows + 1)
+        
+        # Columna de fecha con el mes
+        # itemMes = QTableWidgetItem(f"TOTAL {mes}")
+        # itemMes.setFont(QFont("Arial", 10, QFont.Bold))
+        # itemMes.setBackground(QColor(230, 230, 230))
+        # self.sueldoTableWidget.setItem(rows, 1, itemMes)
+        
+        # Total ingresos
+        # itemIngreso = QTableWidgetItem(str(ingreso))
+        # itemIngreso.setTextAlignment(Qt.AlignRight | Qt.AlignVCenter)
+        # itemIngreso.setFont(QFont("Arial", 10, QFont.Bold))
+        # itemIngreso.setBackground(QColor(200, 255, 200))
+        # self.sueldoTableWidget.setItem(rows, 3, itemIngreso)
+        
+        # Total egresos
+        # itemEgreso = QTableWidgetItem(str(egreso))
+        # itemEgreso.setTextAlignment(Qt.AlignRight | Qt.AlignVCenter)
+        # itemEgreso.setFont(QFont("Arial", 10, QFont.Bold))
+        # itemEgreso.setBackground(QColor(255, 200, 200))
+        # self.sueldoTableWidget.setItem(rows, 4, itemEgreso)
+        
+        # Saldo del mes
+        saldoMes = ingreso - egreso
+        itemSaldo = QTableWidgetItem(str(saldoMes))
+        itemSaldo.setTextAlignment(Qt.AlignRight | Qt.AlignVCenter)
+        itemSaldo.setFont(QFont("Arial", 10, QFont.Bold))
+        itemSaldo.setBackground(QColor(230, 230, 230))
+        self.sueldoTableWidget.setItem(rows, 5, itemSaldo)
+
+    def editarSueldo(self):
+        self.sueldo = SueldoDialog(self.sueldoTableWidget.selectedItems())
+        if self.sueldo.exec_() == QDialog.Accepted:
+            self.cargarTabla()
+
+    def nuevoSueldo(self):
+        self.sueldo = SueldoDialog(0)
+        if self.sueldo.exec_() == QDialog.Accepted:
+            self.cargarTabla()
+
+
+class SueldoDialog(QDialog):
+    def __init__(self, id):
+        super().__init__()
+        uic.loadUi("sueldoDialog.ui", self)
+        self.id = id
+        self.initUI()
+
+    def initUI(self):
+        self.okPushButton.clicked.connect(self.save)
+        self.cancelPushButton.clicked.connect(self.reject)
+        self.entradaRadioButton.setChecked(True)
+        if self.id == 0:
+            self.fechaDateEdit.setDate(QDate.currentDate())
+        else:
+            dialist = self.id[1].text().split('-')
+            dia = QDate(int(dialist[2]), int(dialist[1]), int(dialist[0]))
+            self.fechaDateEdit.setDate(dia)
+            self.detalleLineEdit.setText(self.id[2].text())
+            queryString = "SELECT importe FROM sueldo WHERE idSueldo = '%i'" % int(self.id[0].text())
+            querySigno = QSqlQuery(queryString)
+            querySigno.first()
+            if querySigno.value(0) >= 0:
+                self.entradaRadioButton.setChecked(True)
+            else:
+                self.salidaRadioButton.setChecked(True)
+            self.importeLineEdit.setText(self.id[3].text())
+
+
+
+    def save(self):
+        # check
+        if self.detalleLineEdit.text() == '':
+            mensaje("detalle no seleccionado")
+            return
+        if self.importeLineEdit.text() == '':
+            mensaje("importe no seleccionado")
+            return
+
+        #save
+        query = QSqlQuery()
+        if self.id == 0:
+            query.prepare("INSERT INTO sueldo (fecha, detalle, importe) VALUES (:fecha, :detalle, :importe)")
+        else:
+            query.prepare("UPDATE sueldo SET fecha=:fecha, detalle=:detalle, importe=:importe WHERE idSueldo=:idSueldo")
+            query.bindValue(":idSueldo", int(self.id[0].text()))
+        dia = self.fechaDateEdit.date().toPyDate()
+        diaString = datetime.strftime(dia, "%Y-%m-%d %H:%M:%S")
+        query.bindValue(":fecha", diaString)
+        query.bindValue(":detalle", self.detalleLineEdit.text())
+        importe = int(self.importeLineEdit.text())
+        if self.salidaRadioButton.isChecked() == True:
+            importe = importe * (-1) 
+        query.bindValue(":importe", importe)
+        query.exec_()
+        self.accept()
+
+
+
+
 class NotasWindow(QMainWindow):
     def __init__(self):
         super().__init__()
