@@ -1315,6 +1315,7 @@ class SueldoWindow(QMainWindow):
         self.sueldoTableWidget.setItem(rows, 5, itemSaldo)
 
     def editarSueldo(self):
+        if len(self.sueldoTableWidget.selectedItems()) < 5: return
         self.sueldo = SueldoDialog(self.sueldoTableWidget.selectedItems())
         if self.sueldo.exec_() == QDialog.Accepted:
             self.cargarTabla()
@@ -1537,11 +1538,13 @@ class TableWindow(QMainWindow):
         self.model.select()
         self.tableViewTabla.setModel(self.model)
         self.tableViewTabla.setSortingEnabled(True)
+        self.tableViewTabla.verticalHeader().setVisible(False)
         self.model.sort(0,Qt.SortOrder.AscendingOrder)
         self.newPushButton.clicked.connect(self.new)
         self.salirPushButton.clicked.connect(self.close)
         # self.deletePushButton.clicked.connect(self.delete)
-        #
+        self.setWindowTitle(self.tabla)
+
     def new(self):
         ret = self.model.insertRow(self.model.rowCount())
 
