@@ -10,7 +10,7 @@ import os, sys
 from PyQt5.QtCore import *
 from PyQt5.QtGui import *
 from PyQt5.QtWidgets import *
-from PyQt5.QtSql import *
+from PyQt5.QtSql import QSqlDatabase, QSqlQuery
 from PyQt5 import uic
 from PyQt5.QtPrintSupport import QPrinter, QPrintDialog
 from datetime import datetime, timedelta, date
@@ -108,7 +108,7 @@ class InfomesasWindow(QMainWindow):
         contadorTerminadas = 0
         self.pedidosTableWidget.setRowCount(0)
         query = QSqlQuery(queryString)
-        while query.next():        
+        while query.next():
             rows = self.pedidosTableWidget.rowCount()
             self.pedidosTableWidget.setRowCount(rows + 1)
             self.pedidosTableWidget.setItem(rows, 0, QTableWidgetItem(str(query.value(0))))
@@ -140,7 +140,6 @@ class InfomesasWindow(QMainWindow):
             elif query.value(10) == 'terminada':
                 contadorTerminadas += 1
             estado.setForeground(self.establecerColorEstado(query.value(10)))
-            
             self.pedidosTableWidget.setItem(rows, 10, estado)
             if query.value(11):
                 fecha = datetime.strptime(query.value(11), "%Y-%m-%d %H:%M:%S")
