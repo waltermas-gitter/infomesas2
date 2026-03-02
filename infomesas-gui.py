@@ -408,6 +408,8 @@ class PedidoDialog(QDialog):
         self.initUI()
 
     def initUI(self):
+        if self.id == 0:
+            self.pasarAccPushButton.setEnabled(False)
         clientes = llenoClientes()
         self.clienteComboBox.addItems(clientes)
         query = QSqlQuery("SELECT modelo FROM modelos")
@@ -776,6 +778,7 @@ class Movimiento(QDialog):
 
     def initUI(self):
         self.pagoPushButton.clicked.connect(self.pago)
+        self.asueldoPushButton.clicked.connect(self.asueldo)
         self.debeRadioButton.setChecked(True)
         if self.esProveedor == True:
             self.setWindowTitle(devuelvoNombreProveedor(self.provId))
@@ -861,6 +864,21 @@ class Movimiento(QDialog):
         self.importeLineEdit.setText(str(query.value(0)))
         self.importeLineEdit.setFocus()
         self.importeLineEdit.selectAll()
+
+    def asueldo(self):
+        #checks
+        if self.importeLineEdit.text() == '0' or self.importeLineEdit.text() == '': return
+        if self.debeRadioButton.isChecked() == True: return
+        query = QSqlQuery()
+        queryString = "INSERT INTO sueldo (fecha, detalle, importe) VALUES (:fecha, :detalle, :importe)"
+        query.prepare(queryString)
+        dia = self.fechaDateEdit.date().toPyDate()
+        diaString = datetime.strftime(dia, "%Y-%m-%d %H:%M:%S")
+        query.bindValue(":fecha", diaString)
+        query.bindValue(":detalle", devuelvoNombreCliente(self.provId))
+        query.bindValue(":importe", self.importeLineEdit.text())
+        query.exec_()
+        self.asueldoPushButton.setEnabled(False)
 
 
 class ProductosSeguidosWindow(QMainWindow):
