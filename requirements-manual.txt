@@ -14,3 +14,6 @@ sudo apt install sqlitebrowser
 fedora:
 pip install qt5-tools==5.14.0
 QT_QPA_PLATFORM=xcb qt5-tools designer
+
+server:
+node index.js (?)

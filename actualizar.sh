@@ -10,6 +10,8 @@ python m_generar_cheques_jinja.py
 python m_generar_precios_jinja.py
 python m_generar_notas_jinja.py
 python m_generar_presupuestos_jinja.py
+cd ../web
+python generar_ofertas.py
 
 git status
 git add -A
