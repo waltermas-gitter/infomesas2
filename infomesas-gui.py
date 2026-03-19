@@ -10,7 +10,7 @@ import os, sys
 from PyQt5.QtCore import *
 from PyQt5.QtGui import *
 from PyQt5.QtWidgets import *
-from PyQt5.QtSql import QSqlDatabase, QSqlQuery
+from PyQt5.QtSql import QSqlDatabase, QSqlQuery, QSqlTableModel
 from PyQt5 import uic
 from PyQt5.QtPrintSupport import QPrinter, QPrintDialog
 from datetime import datetime, timedelta, date
