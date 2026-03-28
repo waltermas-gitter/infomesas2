@@ -1632,11 +1632,18 @@ def mensaje(texto):
     msgBox.setStandardButtons(QMessageBox.Ok)
     msgBox.exec()
 
+# def window():
+#     app = QApplication(sys.argv)
+#     app.setApplicationName("infomesas-gui.py")
+#     win = InfomesasWindow()
+#     win.show()
+#     sys.exit(app.exec_())
 def window():
     app = QApplication(sys.argv)
+    app.setApplicationName("infomesas-gui.py")
+    app.setDesktopFileName("infomesas")  # ← esta línea, sin .desktop
     win = InfomesasWindow()
     win.show()
     sys.exit(app.exec_())
-
 window()
 
