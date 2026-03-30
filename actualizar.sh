@@ -1,17 +1,17 @@
 #!/bin/bash
 TIMEFORMAT='%3U'
 cd /home/waltermas/infomesas2/mobile
-python m_generar_clientes_jinja.py
-python m_generar_pendientes_jinja.py
-python m_generar_cada_cliente_jinja.py
-python m_generar_soldini_jinja.py
-python m_generar_cada_cliente_deuda_jinja.py
-python m_generar_cheques_jinja.py
-python m_generar_precios_jinja.py
-python m_generar_notas_jinja.py
-python m_generar_presupuestos_jinja.py
+python3 m_generar_clientes_jinja.py
+python3 m_generar_pendientes_jinja.py
+python3 m_generar_cada_cliente_jinja.py
+python3 m_generar_soldini_jinja.py
+python3 m_generar_cada_cliente_deuda_jinja.py
+python3 m_generar_cheques_jinja.py
+python3 m_generar_precios_jinja.py
+python3 m_generar_notas_jinja.py
+python3 m_generar_presupuestos_jinja.py
 cd ../web
-python generar_ofertas.py
+python3 generar_ofertas.py
 
 git status
 git add -A
