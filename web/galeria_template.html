@@ -1,0 +1,15 @@
+{% extends "base_web.html" %}
+{% block content %}
+<h1 class="display-6 text-center">Galeria</h1>
+
+{% for galeria in galerias %}
+<div class="row p-2 text-center">
+	  <a target="_blank" href="/fotos/galeria/{{galeria}}">
+		  <img src="/fotos/galeria/{{galeria}}" alt="/fotos/galerias/{{galeria}}">
+    </a>
+	<p> https://mesasmastrangelo.com/fotos/galeria/{{galeria}} </p>
+</div>
+{% endfor %}
+
+{% endblock %}
+

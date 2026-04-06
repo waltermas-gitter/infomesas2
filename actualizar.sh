@@ -12,6 +12,7 @@ python3 m_generar_notas_jinja.py
 python3 m_generar_presupuestos_jinja.py
 cd ../web
 python3 generar_ofertas.py
+python3 generar_galeria.py
 
 git status
 git add -A
