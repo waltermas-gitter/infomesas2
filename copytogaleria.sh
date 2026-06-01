@@ -1,12 +1,7 @@
 #!/bin/bash
 
-# ─────────────────────────────────────────────
-# Copia una foto al contenedor Docker "infomesas"
-# Uso: ./copiar_foto.sh <ruta_de_la_foto>
-# ─────────────────────────────────────────────
-
 CONTENEDOR="infomesas"
-DESTINO="/home/waltermas/infomesas2/fotos/galeria"
+DESTINO="/media/data/infomesas2/fotos/galeria"
 
 # Verificar que se pasó un argumento
 if [ -z "$1" ]; then
@@ -23,15 +18,8 @@ if [ ! -f "$FOTO" ]; then
   exit 1
 fi
 
-# Verificar que el contenedor está corriendo
-if ! docker ps --format '{{.Names}}' | grep -q "^${CONTENEDOR}$"; then
-  echo "❌ Error: el contenedor '$CONTENEDOR' no está corriendo."
-    docker start infomesas
-fi
-
 # Copiar la foto
-echo "📂 Copiando '$(basename "$FOTO")' al contenedor '$CONTENEDOR'..."
-docker cp "$FOTO" "${CONTENEDOR}:${DESTINO}/$(basename "$FOTO")"
+cp "$FOTO" "${DESTINO}/$(basename "$FOTO")"
 
 if [ $? -eq 0 ]; then
   echo "✅ Foto copiada exitosamente en: ${DESTINO}/$(basename "$FOTO")"

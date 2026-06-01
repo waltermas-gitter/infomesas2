@@ -4,7 +4,7 @@ pyqt5
  pyqtchart-qt5
  python-dateutil
  pyqtchart
-
+pip install pyqt5 pyqtchart python-dateutil numpy jinja2
  designer:
  sudo apt-get install qttools5-dev-tools
  sudo apt-get install qttools5-dev
