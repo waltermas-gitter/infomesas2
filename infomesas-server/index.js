@@ -9,7 +9,7 @@ const app = express();
 const PORT = 3003;
 
 // Servir archivos estáticos desde la carpeta infomesas2
-const staticPath = '/home/waltermas/infomesas2';
+const staticPath = '/media/data/infomesas2';
 app.use(express.static(staticPath));
 
 // Ruta principal - sirve index.html
