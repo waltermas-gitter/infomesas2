@@ -1,3 +1,4 @@
 /env/
+/env-cachyos/
 /__pycache__/
 /infomesas-server/node_modules/
