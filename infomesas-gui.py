@@ -7,12 +7,14 @@
 BROWSER = "/usr/bin/firefox"
 
 import os, sys
-from PyQt5.QtCore import *
-from PyQt5.QtGui import *
-from PyQt5.QtWidgets import *
-from PyQt5.QtSql import QSqlDatabase, QSqlQuery, QSqlTableModel
-from PyQt5 import uic
-from PyQt5.QtPrintSupport import QPrinter, QPrintDialog
+os.environ["QT_QPA_PLATFORM"] = "wayland"
+
+from PyQt6.QtCore import Qt, QDate
+from PyQt6.QtGui import QPalette, QColor, QBrush, QFont
+from PyQt6.QtWidgets import QMainWindow, QDialog, QApplication, QAbstractItemView, QTableWidgetItem
+from PyQt6.QtSql import QSqlDatabase, QSqlQuery, QSqlTableModel
+from PyQt6 import uic
+from PyQt6.QtPrintSupport import QPrinter, QPrintDialog
 from datetime import datetime, timedelta, date
 import calendar
 import iconosResource_rc # pyrcc5 iconosResource.qrc -o iconosResource_rc.py
@@ -21,23 +23,8 @@ import iconosResource_rc # pyrcc5 iconosResource.qrc -o iconosResource_rc.py
 import soldini_deuda
 from functools import partial
 # import pyqtgraph as pg
-from PyQt5.QtChart import QChart, QChartView, QBarSet, QPercentBarSeries, QBarCategoryAxis, QHorizontalBarSeries, QValueAxis
+from PyQt6.QtCharts import QChart, QChartView, QBarSet, QPercentBarSeries, QBarCategoryAxis, QHorizontalBarSeries, QValueAxis
 import informe_pedidos
-
-
-# Create the connection
-con = QSqlDatabase.addDatabase("QSQLITE")
-con.setDatabaseName("infomesas.db")
-
-# Try to open the connection and handle possible errors
-if not con.open():
-    QMessageBox.critical(
-        None,
-        "App Name - Error!",
-        "Database Error: %s" % con.lastError().databaseText(),
-    )
-    sys.exit(1)
-
 
 class InfomesasWindow(QMainWindow):
     def __init__(self):
@@ -69,10 +56,10 @@ class InfomesasWindow(QMainWindow):
         self.anuladasCheckBox.stateChanged.connect(self.vistaChanged)
         self.presupuestosCheckBox.stateChanged.connect(self.vistaChanged)
         self.pedidosTableWidget.setColumnCount(14)
-        self.pedidosTableWidget.setSelectionBehavior(QTableView.SelectRows)
+        self.pedidosTableWidget.setSelectionBehavior(QAbstractItemView.SelectionBehavior.SelectRows)
         self.pedidosTableWidget.setHorizontalHeaderLabels(["ID", "Fecha", "Cliente", "Modelo", "Chapa", "Notas", "cerrada", "abierta", "ancho", "Precio", "Estado", "F.entrega", "L.entrega", "Demora"])
         self.pedidosTableWidget.itemDoubleClicked.connect(self.editarPedido)
-        self.pedidosTableWidget.setContextMenuPolicy(Qt.CustomContextMenu)
+        self.pedidosTableWidget.setContextMenuPolicy(Qt.ContextMenuPolicy.CustomContextMenu)
         self.pedidosTableWidget.customContextMenuRequested.connect(self.clienteSolo)
         self.hastaDateEdit.setDate(QDate.currentDate())
         self.desdeDateEdit.dateChanged.connect(self.vistaChanged)
@@ -121,16 +108,16 @@ class InfomesasWindow(QMainWindow):
             self.pedidosTableWidget.setItem(rows, 4, QTableWidgetItem(devuelvoNombreChapa(query.value(4))))
             self.pedidosTableWidget.setItem(rows, 5, QTableWidgetItem(str(query.value(5))))
             medidaCerrada = QTableWidgetItem(str(query.value(6)))
-            medidaCerrada.setTextAlignment(Qt.AlignRight)
+            medidaCerrada.setTextAlignment(Qt.AlignmentFlag.AlignRight)
             self.pedidosTableWidget.setItem(rows, 6, medidaCerrada)
             medidaAbierta = QTableWidgetItem(str(query.value(7)))
-            medidaAbierta.setTextAlignment(Qt.AlignRight)
+            medidaAbierta.setTextAlignment(Qt.AlignmentFlag.AlignRight)
             self.pedidosTableWidget.setItem(rows, 7, medidaAbierta)
             medidaAncho = QTableWidgetItem(str(query.value(8)))
-            medidaAncho.setTextAlignment(Qt.AlignRight)
+            medidaAncho.setTextAlignment(Qt.AlignmentFlag.AlignRight)
             self.pedidosTableWidget.setItem(rows, 8, medidaAncho)
             precio = QTableWidgetItem(str(query.value(9)))
-            precio.setTextAlignment(Qt.AlignRight)
+            precio.setTextAlignment(Qt.AlignmentFlag.AlignRight)
             self.pedidosTableWidget.setItem(rows, 9, precio)
             estado = QTableWidgetItem(str(query.value(10)))
             if query.value(10) == 'pendiente':
@@ -166,7 +153,7 @@ class InfomesasWindow(QMainWindow):
 
     def editarPedido(self):
         self.pedido = PedidoDialog(self.pedidosTableWidget.selectedItems())
-        if self.pedido.exec_() == QDialog.Accepted:
+        if self.pedido.exec() == QDialog.DialogCode.Accepted:
             # row = int(self.pedidosTableWidget.selectedItems()[0].text())
             for i in range(len(self.pedido.returnValues)):
                 self.pedidosTableWidget.selectedItems()[i].setText(self.pedido.returnValues[i])
@@ -186,7 +173,7 @@ class InfomesasWindow(QMainWindow):
 
     def nuevoPedido(self):
         self.pedido = PedidoDialog(0)
-        if self.pedido.exec_() == QDialog.Accepted:
+        if self.pedido.exec() == QDialog.DialogCode.Accepted:
             self.vistaChanged()
 
     def showProveedores(self):
@@ -377,11 +364,11 @@ class InfomesasWindow(QMainWindow):
             queryEntrega = QSqlQuery("SELECT idLugarEntrega FROM lugaresEntrega WHERE nombre = '%s'" % self.pedidosTableWidget.selectedItems()[12].text())
             queryEntrega.first()
             query.bindValue(":lugarEntrega", queryEntrega.value(0))
-        query.exec_()
+        query.exec()
         self.vistaChanged()
 
     def onHeaderClicked(self, indice):
-        self.pedidosTableWidget.sortItems(indice, Qt.AscendingOrder)
+        self.pedidosTableWidget.sortItems(indice, Qt.SortOrder.AscendingOrder)
 
     def administrarModelos(self):
         self.tabla = TableWindow("modelos")
@@ -430,23 +417,23 @@ class PedidoDialog(QDialog):
         if self.id == 0:
             self.fechaDateEdit.setDate(QDate.currentDate())
             self.precioLineEdit.setText('0')
-            estadoItem = self.estadoListWidget.findItems('pendiente', Qt.MatchExactly)
+            estadoItem = self.estadoListWidget.findItems('pendiente', Qt.MatchFlag.MatchExactly)
             self.estadoListWidget.setCurrentItem(estadoItem[0])
         else:
             dialist = self.id[1].text().split('-')
             dia = QDate(int(dialist[2]), int(dialist[1]), int(dialist[0]))
             self.fechaDateEdit.setDate(dia)
             self.clienteComboBox.setCurrentText(self.id[2].text())
-            modeloItem = self.modeloListWidget.findItems(self.id[3].text(), Qt.MatchExactly)
+            modeloItem = self.modeloListWidget.findItems(self.id[3].text(), Qt.MatchFlag.MatchExactly)
             self.modeloListWidget.setCurrentItem(modeloItem[0])
-            chapaItem = self.chapaListWidget.findItems(self.id[4].text(), Qt.MatchExactly)
+            chapaItem = self.chapaListWidget.findItems(self.id[4].text(), Qt.MatchFlag.MatchExactly)
             self.chapaListWidget.setCurrentItem(chapaItem[0])
             self.notasPlainTextEdit.setPlainText(self.id[5].text())
             self.medidaCerradaSpinBox.setValue(int(self.id[6].text()))
             self.medidaAbiertaSpinBox.setValue(int(self.id[7].text()))
             self.anchoSpinBox.setValue(int(self.id[8].text()))
             self.precioLineEdit.setText(self.id[9].text())
-            estadoItem = self.estadoListWidget.findItems(self.id[10].text(), Qt.MatchExactly)
+            estadoItem = self.estadoListWidget.findItems(self.id[10].text(), Qt.MatchFlag.MatchExactly)
             self.estadoListWidget.setCurrentItem(estadoItem[0])
             if self.id[11].text() != '':
                 dialist = self.id[11].text().split('-')
@@ -547,7 +534,7 @@ class PedidoDialog(QDialog):
             queryEntrega = QSqlQuery("SELECT idLugarEntrega FROM lugaresEntrega WHERE nombre = '%s'" % self.lugarEntregaComboBox.currentText())
             queryEntrega.first()
             query.bindValue(":lugarEntrega", queryEntrega.value(0))
-        query.exec_()
+        query.exec()
         # self.returnValues.append(self.id[0].text())
         dia = self.fechaDateEdit.date().toPyDate()
         diaString = datetime.strftime(dia, "%d-%m-%Y")
@@ -586,7 +573,7 @@ class PedidoDialog(QDialog):
         concepto = "%s %s %s %s %s" % (self.modeloListWidget.currentItem().text(), self.chapaListWidget.currentItem().text(), self.medidaCerradaSpinBox.value(), self.medidaAbiertaSpinBox.value(), self.anchoSpinBox.value())
         query.bindValue(":concepto", concepto)
         query.bindValue(":importe", int(self.precioLineEdit.text()))
-        query.exec_()
+        query.exec()
         #actualizo saldo en tabla clientes
         queryImportes = QSqlQuery("SELECT importe FROM cuentasCorrientes WHERE cliente = '%s'" % devuelvoIdCliente(self.clienteComboBox.currentText()))
         saldo = 0
@@ -642,7 +629,7 @@ class SumasSaldosDialog(QDialog):
         self.nuevoPushButton.clicked.connect(self.nuevoMovimiento)
         self.salirPushButton.clicked.connect(self.accept)
         self.sumasSaldosTableWidget.setColumnCount(6)
-        self.sumasSaldosTableWidget.setSelectionBehavior(QTableView.SelectRows)
+        self.sumasSaldosTableWidget.setSelectionBehavior(QAbstractItemView.SelectionBehavior.SelectRows)
         self.sumasSaldosTableWidget.setHorizontalHeaderLabels(["Id", "Fecha", "Concepto", "Debe", "Haber", "Saldo"])
         self.sumasSaldosTableWidget.itemDoubleClicked.connect(self.movimiento)
         self.cargarTabla()
@@ -666,7 +653,7 @@ class SumasSaldosDialog(QDialog):
             self.sumasSaldosTableWidget.setItem(rows, 1, QTableWidgetItem(fechap))
             self.sumasSaldosTableWidget.setItem(rows, 2, QTableWidgetItem(query.value(3)))
             sumaItem = QTableWidgetItem(str(query.value(4)))
-            sumaItem.setTextAlignment(Qt.AlignRight)
+            sumaItem.setTextAlignment(Qt.AlignmentFlag.AlignRight)
             if query.value(4) >= 0:
                 self.sumasSaldosTableWidget.setItem(rows, 3, sumaItem)
             else:
@@ -674,7 +661,7 @@ class SumasSaldosDialog(QDialog):
                 self.sumasSaldosTableWidget.setItem(rows, 4, sumaItem)
             saldo += query.value(4)
             saldoItem = QTableWidgetItem(str(saldo))
-            saldoItem.setTextAlignment(Qt.AlignRight)
+            saldoItem.setTextAlignment(Qt.AlignmentFlag.AlignRight)
             self.sumasSaldosTableWidget.setItem(rows, 5, saldoItem)
         self.sumasSaldosTableWidget.scrollToBottom()
         self.sumasSaldosTableWidget.resizeColumnsToContents()
@@ -687,7 +674,7 @@ class SumasSaldosDialog(QDialog):
     def movimiento(self):
         # idMovimiento = self.sumasSaldosTableWidget.selectedItems()[0].text()
         self.mov = Movimiento(self.sumasSaldosTableWidget.selectedItems(), self.id, self.esProveedor)
-        if self.mov.exec_() == QDialog.Accepted:
+        if self.mov.exec() == QDialog.DialogCode.Accepted:
             self.cargarTabla()
             # row = int(self.pedidosTableWidget.selectedItems()[0].text())
             # for i in range(len(self.mov.returnValues)):
@@ -696,7 +683,7 @@ class SumasSaldosDialog(QDialog):
 
     def nuevoMovimiento(self):
         self.mov = Movimiento(0, self.id, self.esProveedor)
-        if self.mov.exec_() == QDialog.Accepted:
+        if self.mov.exec() == QDialog.DialogCode.Accepted:
             self.cargarTabla()
  
 
@@ -709,7 +696,7 @@ class ProveedoresWindow(QMainWindow):
 
     def initUI(self):
         self.proveedoresTableWidget.setColumnCount(3)
-        self.proveedoresTableWidget.setSelectionBehavior(QTableView.SelectRows)
+        self.proveedoresTableWidget.setSelectionBehavior(QAbstractItemView.SelectionBehavior.SelectRows)
         self.proveedoresTableWidget.setHorizontalHeaderLabels(["ID", "Proveedor", "Saldo"])
         self.proveedoresTableWidget.itemDoubleClicked.connect(self.sumasSaldosShow)
         self.salirPushButton.clicked.connect(self.close)
@@ -717,7 +704,7 @@ class ProveedoresWindow(QMainWindow):
 
     def sumasSaldosShow(self):
         self.sumasSaldos = SumasSaldosDialog(self.proveedoresTableWidget.selectedItems()[0].text(), True)
-        if self.sumasSaldos.exec_() == QDialog.Accepted:
+        if self.sumasSaldos.exec() == QDialog.DialogCode.Accepted:
             self.cargarTabla()
 
     def cargarTabla(self):
@@ -729,7 +716,7 @@ class ProveedoresWindow(QMainWindow):
             self.proveedoresTableWidget.setItem(rows, 0, QTableWidgetItem(str(query.value(0))))
             self.proveedoresTableWidget.setItem(rows, 1, QTableWidgetItem(devuelvoNombreProveedor(query.value(0))))
             saldo = QTableWidgetItem(str(query.value(5)))
-            saldo.setTextAlignment(Qt.AlignRight)
+            saldo.setTextAlignment(Qt.AlignmentFlag.AlignRight)
             self.proveedoresTableWidget.setItem(rows, 2, QTableWidgetItem(saldo))
         self.proveedoresTableWidget.resizeColumnsToContents()
 
@@ -742,7 +729,7 @@ class ClientesWindow(QMainWindow):
 
     def initUI(self):
         self.clientesTableWidget.setColumnCount(3)
-        self.clientesTableWidget.setSelectionBehavior(QTableView.SelectRows)
+        self.clientesTableWidget.setSelectionBehavior(QAbstractItemView.SelectionBehavior.SelectRows)
         self.clientesTableWidget.setHorizontalHeaderLabels(["ID", "Cliente", "Saldo"])
         self.clientesTableWidget.itemDoubleClicked.connect(self.sumasSaldosShow)
         self.salirPushButton.clicked.connect(self.close)
@@ -750,7 +737,7 @@ class ClientesWindow(QMainWindow):
 
     def sumasSaldosShow(self):
         self.sumasSaldos = SumasSaldosDialog(self.clientesTableWidget.selectedItems()[0].text(), False)
-        if self.sumasSaldos.exec_() == QDialog.Accepted:
+        if self.sumasSaldos.exec() == QDialog.DialogCode.Accepted:
             self.cargarTabla()
 
     def cargarTabla(self):
@@ -763,10 +750,10 @@ class ClientesWindow(QMainWindow):
             cliente = QTableWidgetItem(devuelvoNombreCliente(query.value(0)))
             self.clientesTableWidget.setItem(rows, 1, cliente)
             saldo = QTableWidgetItem(str(query.value(5)))
-            saldo.setTextAlignment(Qt.AlignRight)
+            saldo.setTextAlignment(Qt.AlignmentFlag.AlignRight)
             self.clientesTableWidget.setItem(rows, 2, QTableWidgetItem(saldo))
         self.clientesTableWidget.resizeColumnsToContents()
-        self.clientesTableWidget.sortItems(2, Qt.DescendingOrder)
+        self.clientesTableWidget.sortItems(2, Qt.SortOrder.DescendingOrder)
 
 
 class Movimiento(QDialog):
@@ -838,7 +825,7 @@ class Movimiento(QDialog):
         if self.haberRadioButton.isChecked() == True:
           importe = importe * (-1) 
         query.bindValue(":importe", importe)
-        query.exec_()
+        query.exec()
         if self.esProveedor == True:
             # actualizo saldo en tabla proveedores
             queryImportes = QSqlQuery("SELECT importe FROM deudas WHERE Proveedor = '%s'" % self.provId)
@@ -879,7 +866,7 @@ class Movimiento(QDialog):
         query.bindValue(":fecha", diaString)
         query.bindValue(":detalle", devuelvoNombreCliente(self.provId))
         query.bindValue(":importe", self.importeLineEdit.text())
-        query.exec_()
+        query.exec()
         self.asueldoPushButton.setEnabled(False)
 
 
@@ -893,10 +880,10 @@ class ProductosSeguidosWindow(QMainWindow):
         self.nuevoPushButton.clicked.connect(self.nuevoProducto)
         self.salirPushButton.clicked.connect(self.close)
         self.productosSeguidosTableWidget.setColumnCount(5)
-        self.productosSeguidosTableWidget.setSelectionBehavior(QTableView.SelectRows)
+        self.productosSeguidosTableWidget.setSelectionBehavior(QAbstractItemView.SelectionBehavior.SelectRows)
         self.productosSeguidosTableWidget.setHorizontalHeaderLabels(["ID", "Descripcion", "Fecha", "Proveedor", "Precio"])
         self.productosSeguidosTableWidget.itemDoubleClicked.connect(self.historialPreciosShow)
-        self.productosSeguidosTableWidget.setContextMenuPolicy(Qt.CustomContextMenu)
+        self.productosSeguidosTableWidget.setContextMenuPolicy(Qt.ContextMenuPolicy.CustomContextMenu)
         self.productosSeguidosTableWidget.customContextMenuRequested.connect(self.productoFavorito)
         # self.filtroLineEdit.textChanged.connect(self.cargarTabla)
         self.filtroLineEdit.textChanged.connect(self.cargarTabla)
@@ -904,7 +891,7 @@ class ProductosSeguidosWindow(QMainWindow):
 
     def historialPreciosShow(self):
         self.historialPrecios = HistorialPreciosDialog(self.productosSeguidosTableWidget.selectedItems())
-        if self.historialPrecios.exec_() == QDialog.Accepted:
+        if self.historialPrecios.exec() == QDialog.DialogCode.Accepted:
             self.cargarTabla()
 
     def cargarTabla(self):
@@ -931,7 +918,7 @@ class ProductosSeguidosWindow(QMainWindow):
                 prov = devuelvoNombreProveedor(queryPrecio.value(3))
                 self.productosSeguidosTableWidget.setItem(rows, 3, QTableWidgetItem(prov))
                 precioItem = QTableWidgetItem(str(queryPrecio.value(2)))
-                precioItem.setTextAlignment(Qt.AlignRight)
+                precioItem.setTextAlignment(Qt.AlignmentFlag.AlignRight)
                 self.productosSeguidosTableWidget.setItem(rows, 4, precioItem)
         self.productosSeguidosTableWidget.resizeColumnsToContents()
         self.filtroLineEdit.setFocus()
@@ -965,7 +952,7 @@ class HistorialPreciosDialog(QDialog):
         # self.dialogButtonBox.accepted.connect(self.save)
         self.setWindowTitle(self.id[1].text())
         self.historialPreciosTableWidget.setColumnCount(5)
-        self.historialPreciosTableWidget.setSelectionBehavior(QTableView.SelectRows)
+        self.historialPreciosTableWidget.setSelectionBehavior(QAbstractItemView.SelectionBehavior.SelectRows)
         self.historialPreciosTableWidget.setHorizontalHeaderLabels(["ID", "Proveedor", "Fecha", "Precio", "Dif"])
         self.historialPreciosTableWidget.itemDoubleClicked.connect(self.editMov)
         self.nuevoPushButton.clicked.connect(self.nuevoPrecioShow)
@@ -994,12 +981,12 @@ class HistorialPreciosDialog(QDialog):
     def nuevoPrecioShow(self):
         # self.nuevoPrecio = NuevoPrecioDialog(self.historialPreciosTableWidget.selectedItems())
         self.nuevoPrecio = NuevoPrecioDialog(0, self.id)
-        if self.nuevoPrecio.exec_() == QDialog.Accepted:
+        if self.nuevoPrecio.exec() == QDialog.DialogCode.Accepted:
             self.cargarTabla()
 
     def editMov(self):
         self.nuevoPrecio = NuevoPrecioDialog(self.historialPreciosTableWidget.selectedItems(), self.id)
-        if self.nuevoPrecio.exec_() == QDialog.Accepted:
+        if self.nuevoPrecio.exec() == QDialog.DialogCode.Accepted:
             self.cargarTabla()
 
 
@@ -1043,7 +1030,7 @@ class NuevoPrecioDialog(QDialog):
         dia = self.fechaDateEdit.date().toPyDate()
         diaString = datetime.strftime(dia, "%Y-%m-%d %H:%M:%S")
         query.bindValue(":fecha", diaString)
-        query.exec_()
+        query.exec()
         self.accept()
 
 
@@ -1055,7 +1042,7 @@ class ChequesWindow(QMainWindow):
 
     def initUI(self):
         self.chequesTableWidget.setColumnCount(9)
-        self.chequesTableWidget.setSelectionBehavior(QTableView.SelectRows)
+        self.chequesTableWidget.setSelectionBehavior(QAbstractItemView.SelectionBehavior.SelectRows)
         self.chequesTableWidget.setHorizontalHeaderLabels(["ID", "Recibido", "Cliente", "Fecha", "Banco", "Numero", "Importe", "Entregado", "Proveedor"])
         self.chequesTableWidget.itemDoubleClicked.connect(self.editarCheque)
         self.nuevoPushButton.clicked.connect(self.nuevoCheque)
@@ -1080,7 +1067,7 @@ class ChequesWindow(QMainWindow):
             self.chequesTableWidget.setItem(rows, 4, QTableWidgetItem(query.value(4)))
             self.chequesTableWidget.setItem(rows, 5, QTableWidgetItem(str(query.value(5))))
             importe = QTableWidgetItem(str(query.value(6)))
-            importe.setTextAlignment(Qt.AlignRight)
+            importe.setTextAlignment(Qt.AlignmentFlag.AlignRight)
             self.chequesTableWidget.setItem(rows, 6, QTableWidgetItem(importe))
             if query.value(7):
                 fecha = datetime.strptime(query.value(7), "%Y-%m-%d %H:%M:%S")
@@ -1098,12 +1085,12 @@ class ChequesWindow(QMainWindow):
 
     def editarCheque(self):
         self.cheque = ChequeDialog(self.chequesTableWidget.selectedItems())
-        if self.cheque.exec_() == QDialog.Accepted:
+        if self.cheque.exec() == QDialog.DialogCode.Accepted:
             self.cargarTabla()
 
     def nuevoCheque(self):
         self.cheque = ChequeDialog(0)
-        if self.cheque.exec_() == QDialog.Accepted:
+        if self.cheque.exec() == QDialog.DialogCode.Accepted:
             self.cargarTabla()
 
 
@@ -1191,7 +1178,7 @@ class ChequeDialog(QDialog):
             diaString = datetime.strftime(dia, "%Y-%m-%d %H:%M:%S")
             query.bindValue(":fechaEntregado", diaString)
             query.bindValue(":entregadoA", devuelvoIdProveedor(self.proveedorComboBox.currentText()))
-        query.exec_()
+        query.exec()
         self.accept()
 
  
@@ -1203,7 +1190,7 @@ class SueldoWindow(QMainWindow):
 
     def initUI(self):
         self.sueldoTableWidget.setColumnCount(6)
-        self.sueldoTableWidget.setSelectionBehavior(QTableView.SelectRows)
+        self.sueldoTableWidget.setSelectionBehavior(QAbstractItemView.SelectionBehavior.SelectRows)
         self.sueldoTableWidget.setHorizontalHeaderLabels(["ID", "Fecha", "Detalle", "Ingreso", "Egreso", "Saldo"])
         self.sueldoTableWidget.setColumnWidth(0, 7)
         self.sueldoTableWidget.setColumnWidth(1, 70)
@@ -1279,7 +1266,7 @@ class SueldoWindow(QMainWindow):
             saldo += valor
             
             item = QTableWidgetItem()
-            item.setTextAlignment(Qt.AlignRight | Qt.AlignVCenter)
+            item.setTextAlignment(Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter)
             
             if valor > 0:
                 item.setText(str(valor))
@@ -1292,7 +1279,7 @@ class SueldoWindow(QMainWindow):
             
             # Saldo
             itemSueldo = QTableWidgetItem(str(saldo))
-            itemSueldo.setTextAlignment(Qt.AlignRight | Qt.AlignVCenter)
+            itemSueldo.setTextAlignment(Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter)
             self.sueldoTableWidget.setItem(rows, 5, itemSueldo)
         
         # Insertar total del último mes
@@ -1328,20 +1315,20 @@ class SueldoWindow(QMainWindow):
         # Saldo del mes
         saldoMes = ingreso - egreso
         itemSaldo = QTableWidgetItem(str(saldoMes))
-        itemSaldo.setTextAlignment(Qt.AlignRight | Qt.AlignVCenter)
-        itemSaldo.setFont(QFont("Arial", 10, QFont.Bold))
+        itemSaldo.setTextAlignment(Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter)
+        itemSaldo.setFont(QFont("Arial", 10, QFont.Weight.Bold))
         itemSaldo.setBackground(QColor(230, 230, 230))
         self.sueldoTableWidget.setItem(rows, 5, itemSaldo)
 
     def editarSueldo(self):
         if len(self.sueldoTableWidget.selectedItems()) < 5: return
         self.sueldo = SueldoDialog(self.sueldoTableWidget.selectedItems())
-        if self.sueldo.exec_() == QDialog.Accepted:
+        if self.sueldo.exec() == QDialog.DialogCode.Accepted:
             self.cargarTabla()
 
     def nuevoSueldo(self):
         self.sueldo = SueldoDialog(0)
-        if self.sueldo.exec_() == QDialog.Accepted:
+        if self.sueldo.exec() == QDialog.DialogCode.Accepted:
             self.cargarTabla()
 
 
@@ -1398,7 +1385,7 @@ class SueldoDialog(QDialog):
         if self.salidaRadioButton.isChecked() == True:
             importe = importe * (-1) 
         query.bindValue(":importe", importe)
-        query.exec_()
+        query.exec()
         self.accept()
 
 
@@ -1415,14 +1402,14 @@ class NotasWindow(QMainWindow):
         self.eliminarPushButton.clicked.connect(self.eliminarNota)
         self.salirPushButton.clicked.connect(self.close)
         self.notasTableWidget.setColumnCount(2)
-        self.notasTableWidget.setSelectionBehavior(QTableView.SelectRows)
+        self.notasTableWidget.setSelectionBehavior(QAbstractItemView.SelectionBehavior.SelectRows)
         self.notasTableWidget.setHorizontalHeaderLabels(["ID", "Titulo"])
         self.notasTableWidget.itemDoubleClicked.connect(self.notaShow)
         self.cargarTabla()
 
     def notaShow(self):
         self.nota = NotaDialog(self.notasTableWidget.selectedItems())
-        if self.nota.exec_() == QDialog.Accepted:
+        if self.nota.exec() == QDialog.DialogCode.Accepted:
             self.cargarTabla()
 
     def cargarTabla(self):
@@ -1437,7 +1424,7 @@ class NotasWindow(QMainWindow):
         
     def nuevaNota(self):
         self.nota = NotaDialog(0)
-        if self.nota.exec_() == QDialog.Accepted:
+        if self.nota.exec() == QDialog.DialogCode.Accepted:
             self.cargarTabla()
     
     def eliminarNota(self):
@@ -1484,7 +1471,7 @@ class NotaDialog(QDialog):
             query.bindValue(":idNota", self.id[0].text())
         query.bindValue(":titulo", self.tituloLineEdit.text())
         query.bindValue(":nota", self.notaPlainTextEdit.toPlainText())
-        query.exec_()
+        query.exec()
         self.accept()
 
 
@@ -1504,7 +1491,7 @@ class PrintingWindow(QMainWindow):
     def print_file(self):
         printer = QPrinter()
         dialog = QPrintDialog(printer, self)
-        if dialog.exec_() == QPrintDialog.Accepted:
+        if dialog.exec() == QPrintDialog.Accepted:
             self.textoPlainTextEdit.print_(printer)
 
 
@@ -1529,16 +1516,16 @@ class PedidosPorMesWindow(QMainWindow):
         # categories = ["Jan", "Feb", "Mar", "Apr", "May", "Jun"]
         axisY = QBarCategoryAxis()
         axisY.append(categories)
-        chart.addAxis(axisY, Qt.AlignLeft)
+        chart.addAxis(axisY, Qt.AlignmentFlag.AlignLeft)
         series.attachAxis(axisY)
         # chart.createDefaultAxes()
         # chart.setAxisX(series, axisY)
         axisX = QValueAxis()
-        chart.addAxis(axisX, Qt.AlignBottom)
+        chart.addAxis(axisX, Qt.AlignmentFlag.AlignBottom)
         series.attachAxis(axisX)
         axisX.applyNiceNumbers()
         chart.legend().setVisible(True)
-        chart.legend().setAlignment(Qt.AlignBottom)
+        chart.legend().setAlignment(Qt.AlignmentFlag.AlignBottom)
         chartView = QChartView(chart)
         chartView.setRenderHint(QPainter.Antialiasing)
         self.setCentralWidget(chartView)
@@ -1643,9 +1630,41 @@ def mensaje(texto):
 def window():
     app = QApplication(sys.argv)
     app.setApplicationName("infomesas-gui.py")
-    app.setDesktopFileName("infomesas")  # ← esta línea, sin .desktop
+    app.setDesktopFileName("infomesas")
+    app.setStyle("Fusion")
+    app.setStyleSheet("QPushButton { font-weight: normal; }")
+    # 2. Forzamos una paleta de colores clara por defecto
+    palette = QPalette()
+    palette.setColor(QPalette.ColorRole.Window, QColor(240, 240, 240))
+    palette.setColor(QPalette.ColorRole.WindowText, Qt.GlobalColor.black)
+    palette.setColor(QPalette.ColorRole.Base, QColor(255, 255, 255))
+    palette.setColor(QPalette.ColorRole.AlternateBase, QColor(233, 233, 233))
+    palette.setColor(QPalette.ColorRole.ToolTipBase, Qt.GlobalColor.white)
+    palette.setColor(QPalette.ColorRole.ToolTipText, Qt.GlobalColor.black)
+    palette.setColor(QPalette.ColorRole.Text, Qt.GlobalColor.black)
+    palette.setColor(QPalette.ColorRole.Button, QColor(240, 240, 240))
+    palette.setColor(QPalette.ColorRole.ButtonText, Qt.GlobalColor.black)
+    palette.setColor(QPalette.ColorRole.BrightText, Qt.GlobalColor.red)
+    palette.setColor(QPalette.ColorRole.Link, QColor(42, 130, 218))
+    palette.setColor(QPalette.ColorRole.Highlight, QColor(42, 130, 218))
+    palette.setColor(QPalette.ColorRole.HighlightedText, Qt.GlobalColor.white)
+    app.setPalette(palette)
+
+    # ← la conexión va acá, después de QApplication
+    global con
+    con = QSqlDatabase.addDatabase("QSQLITE")
+    con.setDatabaseName("infomesas.db")
+
+    if not con.open():
+        QMessageBox.critical(
+            None,
+            "App Name - Error!",
+            "Database Error: %s" % con.lastError().databaseText(),
+        )
+        sys.exit(1)
+
     win = InfomesasWindow()
     win.show()
-    sys.exit(app.exec_())
-window()
+    sys.exit(app.exec())
 
+window()
