@@ -18,3 +18,20 @@ QT_QPA_PLATFORM=xcb qt5-tools designer
 server: carpeta infomesas-server
 npm install
 node index.js (?)
+
+pyqt6
+
+Package          Version
+---------------- -----------
+Jinja2           3.1.6
+MarkupSafe       3.0.3
+numpy            2.4.6
+pip              26.1.1
+PyQt6            6.11.0
+PyQt6-Charts     6.11.0
+PyQt6-Charts-Qt6 6.11.1
+PyQt6-Qt6        6.11.1
+PyQt6_sip        13.11.1
+PyQtChart        5.15.7
+python-dateutil  2.9.0.post0
+six              1.17.0

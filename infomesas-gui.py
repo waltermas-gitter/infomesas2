@@ -1632,7 +1632,15 @@ def window():
     app.setApplicationName("infomesas-gui.py")
     app.setDesktopFileName("infomesas")
     app.setStyle("Fusion")
-    app.setStyleSheet("QPushButton { font-weight: normal; }")
+    app.setStyleSheet("""
+        QPushButton { 
+            font-weight: normal; 
+        }
+        QDateEdit:disabled, QComboBox:disabled, QPushButton:disabled { 
+            background-color: #e0e0e0; 
+            color: #787878; 
+        }
+    """)
     # 2. Forzamos una paleta de colores clara por defecto
     palette = QPalette()
     palette.setColor(QPalette.ColorRole.Window, QColor(240, 240, 240))
