@@ -6,7 +6,7 @@
 # reference: https://doc.bccnsoft.com/docs/PyQt5/class_reference.html
 BROWSER = "/usr/bin/firefox"
 
-import os, sys
+import os, sys, subprocess
 os.environ["QT_QPA_PLATFORM"] = "wayland"
 
 from PyQt6.QtCore import Qt, QDate
@@ -15,7 +15,7 @@ from PyQt6.QtWidgets import QMainWindow, QDialog, QApplication, QAbstractItemVie
 from PyQt6.QtSql import QSqlDatabase, QSqlQuery, QSqlTableModel
 from PyQt6 import uic
 from PyQt6.QtPrintSupport import QPrinter, QPrintDialog
-from datetime import datetime, timedelta, date
+from datetime import datetime, timedelta, date, timezone
 import calendar
 import iconosResource_rc # pyrcc5 iconosResource.qrc -o iconosResource_rc.py
 # import re
@@ -25,6 +25,19 @@ from functools import partial
 # import pyqtgraph as pg
 from PyQt6.QtCharts import QChart, QChartView, QBarSet, QPercentBarSeries, QBarCategoryAxis, QHorizontalBarSeries, QValueAxis
 import informe_pedidos
+
+DIAS_SEMANA = ["lunes", "martes", "miércoles", "jueves", "viernes", "sábado", "domingo"]
+def dias_desde_ultimo_push(repo_path=".", rama="origin/main"):
+    resultado = subprocess.run(
+        ["git", "-C", repo_path, "log", "-1", "--format=%ct", rama],
+        capture_output=True, text=True, check=True
+    )
+    timestamp = int(resultado.stdout.strip())
+    fecha_push = datetime.fromtimestamp(timestamp, tz=timezone.utc)
+    dias = (datetime.now(timezone.utc) - fecha_push).days
+    dia_semana = DIAS_SEMANA[fecha_push.weekday()]
+    return dias, dia_semana, fecha_push
+
 
 class InfomesasWindow(QMainWindow):
     def __init__(self):
@@ -148,7 +161,9 @@ class InfomesasWindow(QMainWindow):
         # self.pedidosTableWidget.horizontalHeader().setSectionResizeMode(5, QHeaderView.Stretch)
         self.pedidosTableWidget.setColumnWidth(5, 150)
         self.pedidosTableWidget.scrollToBottom()
-        mensajeStatus = "%i registros. %i pendientes, %i en produccion, %i terminadas" % (self.pedidosTableWidget.rowCount(), contadorPendientes, contadorEnProduccion, contadorTerminadas)
+        dias, dia_semana, fecha = dias_desde_ultimo_push(".git", "origin/main")
+
+        mensajeStatus = "%i registros. %i pendientes, %i en produccion, %i terminadas. Ultimo push hace %i dias (%s)" % (self.pedidosTableWidget.rowCount(), contadorPendientes, contadorEnProduccion, contadorTerminadas, dias, dia_semana)
         self.statusbar.showMessage(mensajeStatus)
 
     def editarPedido(self):
