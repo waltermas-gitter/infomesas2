@@ -11,7 +11,7 @@ os.environ["QT_QPA_PLATFORM"] = "wayland"
 
 from PyQt6.QtCore import Qt, QDate
 from PyQt6.QtGui import QPalette, QColor, QBrush, QFont
-from PyQt6.QtWidgets import QMainWindow, QDialog, QApplication, QAbstractItemView, QTableWidgetItem
+from PyQt6.QtWidgets import QMainWindow, QDialog, QApplication, QAbstractItemView, QTableWidgetItem, QMessageBox
 from PyQt6.QtSql import QSqlDatabase, QSqlQuery, QSqlTableModel
 from PyQt6 import uic
 from PyQt6.QtPrintSupport import QPrinter, QPrintDialog
@@ -1447,8 +1447,10 @@ class NotasWindow(QMainWindow):
             mensaje("no hay nota seleccionada")
             return
 
-        reply = QMessageBox.question(self, 'Eliminar', 'Esta seguro de eliminar esta nota?', QMessageBox.Yes | QMessageBox.No, QMessageBox.No)
-        if reply == QMessageBox.Yes:
+        reply = QMessageBox.question(self, 'Eliminar', 'Esta seguro de eliminar esta nota?',
+                                      QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
+                                      QMessageBox.StandardButton.No)
+        if reply == QMessageBox.StandardButton.Yes:
             query = QSqlQuery("DELETE FROM notas WHERE idNota = %s" % self.notasTableWidget.selectedItems()[0].text())
             self.cargarTabla()
             
@@ -1630,10 +1632,10 @@ def devuelvoUltimoPrecio(id):
 
 def mensaje(texto):
     msgBox = QMessageBox()
-    msgBox.setIcon(QMessageBox.Information)
+    msgBox.setIcon(QMessageBox.Icon.Information)
     msgBox.setText(texto)
     msgBox.setWindowTitle("Error")
-    msgBox.setStandardButtons(QMessageBox.Ok)
+    msgBox.setStandardButtons(QMessageBox.StandardButton.Ok)
     msgBox.exec()
 
 # def window():
